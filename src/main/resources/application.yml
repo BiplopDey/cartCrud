@@ -1,0 +1,7 @@
+schedule:
+  interval:
+    milliseconds: 60000 # every minute
+
+cart:
+  ttl:
+    seconds: 600 # every 10m

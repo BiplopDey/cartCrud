@@ -1,0 +1,7 @@
+schedule:
+  interval:
+    milliseconds: 50
+
+cart:
+  ttl:
+    seconds: 1

@@ -2,6 +2,7 @@ package com.assignment.cartCrud.respository;
 
 import com.assignment.cartCrud.model.Cart;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,5 +28,10 @@ public class CartInMemoryRepositoryImpl implements CartRepository{
     @Override
     public void deleteCart(String id) {
         carts.remove(id);
+    }
+
+    @Override
+    public Iterator<Cart> getAllCarts() {
+        return carts.values().iterator();
     }
 }
