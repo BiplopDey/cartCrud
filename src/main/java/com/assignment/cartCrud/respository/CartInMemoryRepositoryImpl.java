@@ -1,12 +1,14 @@
 package com.assignment.cartCrud.respository;
 
 import com.assignment.cartCrud.model.Cart;
+import org.springframework.stereotype.Repository;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
 public class CartInMemoryRepositoryImpl implements CartRepository{
     private final Map<String, Cart> carts = new ConcurrentHashMap<>();
 
