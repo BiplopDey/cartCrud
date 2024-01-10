@@ -1,8 +1,9 @@
 package com.assignment.cartCrud.integration;
 
-import com.assignment.cartCrud.jobs.CartCleanupTask;
+import com.assignment.cartCrud.job.CartCleanupTask;
 import com.assignment.cartCrud.respository.CartRepository;
 import com.jayway.jsonpath.JsonPath;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,13 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CartTtlIntegrationTest {
-
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private CartRepository cartRepository;
-
     @Autowired
     private CartCleanupTask cartCleanupTask;
 
@@ -37,7 +37,8 @@ public class CartTtlIntegrationTest {
         String jsonResponse = result.getResponse().getContentAsString();
         String cartId = JsonPath.parse(jsonResponse).read("$.id", String.class);
 
-        Thread.sleep(1000+200);
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() ->
+                !cartRepository.getCart(cartId).isPresent());
 
         assertFalse(cartRepository.getCart(cartId).isPresent());
     }

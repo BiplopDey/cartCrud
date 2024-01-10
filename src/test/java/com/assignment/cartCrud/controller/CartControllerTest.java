@@ -1,6 +1,5 @@
-package com.assignment.cartCrud.infrastructure.controller;
+package com.assignment.cartCrud.controller;
 
-import com.assignment.cartCrud.controller.CartController;
 import com.assignment.cartCrud.model.Cart;
 import com.assignment.cartCrud.model.Product;
 import com.assignment.cartCrud.service.CartService;

@@ -14,7 +14,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CartCrudIntegrationTest {
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -43,5 +42,4 @@ public class CartCrudIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
-
 }

@@ -11,5 +11,4 @@ public interface CartRepository {
     void updateCart(Cart cart);
     void deleteCart(String id);
     Iterator<Cart> getAllCarts();
-
 }

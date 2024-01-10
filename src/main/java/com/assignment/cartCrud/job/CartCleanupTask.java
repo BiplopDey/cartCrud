@@ -1,4 +1,4 @@
-package com.assignment.cartCrud.jobs;
+package com.assignment.cartCrud.job;
 
 import com.assignment.cartCrud.respository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
