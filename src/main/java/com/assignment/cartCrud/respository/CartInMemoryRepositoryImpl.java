@@ -1,12 +1,14 @@
 package com.assignment.cartCrud.respository;
 
 import com.assignment.cartCrud.model.Cart;
+import com.assignment.cartCrud.model.Product;
 import org.springframework.stereotype.Repository;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Repository
 public class CartInMemoryRepositoryImpl implements CartRepository{
@@ -28,8 +30,20 @@ public class CartInMemoryRepositoryImpl implements CartRepository{
     }
 
     @Override
-    public void deleteCart(String id) {
-        carts.remove(id);
+    public boolean deleteCart(String id) {
+        return carts.remove(id) != null;
+    }
+
+    @Override
+    public boolean addProductToCart(String cartId, Product product) {
+        AtomicBoolean added = new AtomicBoolean(false);
+        carts.computeIfPresent(cartId, (id, cart) -> {
+            cart.getProducts().add(product);
+            cart.updateLastAccessedTime();
+            added.set(true);
+            return cart;
+        });
+        return added.get();
     }
 
     @Override

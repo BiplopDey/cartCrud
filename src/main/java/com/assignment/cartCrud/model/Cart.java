@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
 @Setter
@@ -19,7 +19,7 @@ public class Cart {
     private LocalDateTime lastAccessedTime;
 
     public Cart() {
-        this.products = new ArrayList<>();
+        this.products = new CopyOnWriteArrayList<>();
         this.lastAccessedTime = LocalDateTime.now();
     }
 

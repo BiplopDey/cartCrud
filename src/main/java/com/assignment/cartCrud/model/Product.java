@@ -15,6 +15,6 @@ public class Product {
     private Double amount;
 
     public boolean isValid(){
-        return !Objects.isNull(id) && !Objects.isNull(amount);
+        return !Objects.isNull(id) && !Objects.isNull(amount) && amount > 0;
     }
 }
