@@ -1,23 +1,11 @@
 package com.assignment.cartCrud.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Objects;
-
-@Getter
-@Setter
-@AllArgsConstructor
-public class Product {
-    private Long id;
-    private String description;
-    private Double amount;
+public record Product(Long id, String description, Double amount) {
 
     public boolean isValid(){
-        return !Objects.isNull(id)
+        return id != null
                 && id > 0
-                && !Objects.isNull(amount)
+                && amount != null
                 && Double.isFinite(amount)
                 && amount > 0;
     }
