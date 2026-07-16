@@ -15,6 +15,10 @@ public class Product {
     private Double amount;
 
     public boolean isValid(){
-        return !Objects.isNull(id) && !Objects.isNull(amount) && amount > 0;
+        return !Objects.isNull(id)
+                && id > 0
+                && !Objects.isNull(amount)
+                && Double.isFinite(amount)
+                && amount > 0;
     }
 }

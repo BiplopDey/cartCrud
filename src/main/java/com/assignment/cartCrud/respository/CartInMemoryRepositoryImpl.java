@@ -4,11 +4,14 @@ import com.assignment.cartCrud.model.Cart;
 import com.assignment.cartCrud.model.Product;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Repository
 public class CartInMemoryRepositoryImpl implements CartRepository{
@@ -25,8 +28,14 @@ public class CartInMemoryRepositoryImpl implements CartRepository{
     }
 
     @Override
-    public void updateCart(Cart cart) {
-        carts.put(cart.getId(), cart);
+    public Optional<Cart> getAndTouchCart(String id) {
+        AtomicReference<Cart> touchedCart = new AtomicReference<>();
+        carts.computeIfPresent(id, (cartId, cart) -> {
+            cart.updateLastAccessedTime();
+            touchedCart.set(cart);
+            return cart;
+        });
+        return Optional.ofNullable(touchedCart.get());
     }
 
     @Override
@@ -44,6 +53,19 @@ public class CartInMemoryRepositoryImpl implements CartRepository{
             return cart;
         });
         return added.get();
+    }
+
+    @Override
+    public int deleteExpiredCarts(LocalDateTime expirationThreshold) {
+        AtomicInteger deleted = new AtomicInteger();
+        carts.forEach((id, cart) -> carts.computeIfPresent(id, (cartId, currentCart) -> {
+            if (!currentCart.getLastAccessedTime().isAfter(expirationThreshold)) {
+                deleted.incrementAndGet();
+                return null;
+            }
+            return currentCart;
+        }));
+        return deleted.get();
     }
 
     @Override

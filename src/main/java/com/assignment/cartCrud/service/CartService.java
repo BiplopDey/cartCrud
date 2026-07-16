@@ -24,9 +24,7 @@ public class CartService {
     }
 
     public Optional<Cart> getCart(String id) {
-        Optional<Cart> cartOptional = cartRepository.getCart(id);
-        cartOptional.ifPresent(this::touchCart);
-        return cartOptional;
+        return cartRepository.getAndTouchCart(id);
     }
 
     public boolean addProductToCart(String cartId, Product product) {
@@ -35,10 +33,5 @@ public class CartService {
 
     public boolean deleteCart(String id) {
         return cartRepository.deleteCart(id);
-    }
-
-    private void touchCart(Cart cart) {
-        cart.updateLastAccessedTime();
-        cartRepository.updateCart(cart);
     }
 }

@@ -7,9 +7,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Spliterators;
-import java.util.stream.StreamSupport;
 
 @Component
 public class CartCleanupTask {
@@ -20,8 +17,7 @@ public class CartCleanupTask {
 
     @Scheduled(fixedRateString = "${schedule.interval.milliseconds}")
     public void removeExpiredCarts() {
-        StreamSupport.stream(Spliterators.spliteratorUnknownSize(cartRepository.getAllCarts(), 0), false)
-                .filter(cart -> ChronoUnit.SECONDS.between(cart.getLastAccessedTime(), LocalDateTime.now()) >= ttlInSeconds)
-                .forEach(cart -> cartRepository.deleteCart(cart.getId()));
+        LocalDateTime expirationThreshold = LocalDateTime.now().minusSeconds(ttlInSeconds);
+        cartRepository.deleteExpiredCarts(expirationThreshold);
     }
 }

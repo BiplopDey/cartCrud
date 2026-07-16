@@ -78,20 +78,20 @@ class CartServiceTest {
         Cart mockCart = new Cart();
         mockCart.setId(cartId);
 
-        when(cartRepository.getCart(cartId)).thenReturn(Optional.of(mockCart));
+        when(cartRepository.getAndTouchCart(cartId)).thenReturn(Optional.of(mockCart));
 
         Optional<Cart> result = cartService.getCart(cartId);
 
         assertTrue(result.isPresent());
         assertEquals(cartId, result.get().getId());
-        verify(cartRepository).updateCart(mockCart);
+        verify(cartRepository).getAndTouchCart(cartId);
     }
 
     @Test
     public void testGetCart_CartDoesNotExist() {
         String cartId = UUID.randomUUID().toString();
 
-        when(cartRepository.getCart(cartId)).thenReturn(Optional.empty());
+        when(cartRepository.getAndTouchCart(cartId)).thenReturn(Optional.empty());
 
         Optional<Cart> result = cartService.getCart(cartId);
 
