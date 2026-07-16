@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:target/cartcrud-test.db
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false

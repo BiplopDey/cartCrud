@@ -24,25 +24,14 @@ public class CartService {
     }
 
     public Optional<Cart> getCart(String id) {
-        Optional<Cart> cartOptional = cartRepository.getCart(id);
-        cartOptional.ifPresent(this::update);
-        return cartOptional;
+        return cartRepository.getAndTouchCart(id);
     }
 
-
-    public void addProductToCart(String cartId, Product product) {
-        cartRepository.getCart(cartId).ifPresent(cart -> {
-            cart.getProducts().add(product);
-            update(cart);
-        });
+    public boolean addProductToCart(String cartId, Product product) {
+        return cartRepository.addProductToCart(cartId, product);
     }
 
-    public void deleteCart(String id) {
-        cartRepository.deleteCart(id);
-    }
-
-    private void update(Cart cart) {
-        cart.updateLastAccessedTime();
-        cartRepository.updateCart(cart);
+    public boolean deleteCart(String id) {
+        return cartRepository.deleteCart(id);
     }
 }

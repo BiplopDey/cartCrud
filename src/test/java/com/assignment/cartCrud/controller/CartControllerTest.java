@@ -15,7 +15,6 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,11 +61,10 @@ class CartControllerTest {
     }
 
     @Test
-    public void addProductToCartTest() throws Exception {
-        Product product = new Product(1L, "Sample Product", 10.0);
+    public void addProductToCartTest_CartExists() throws Exception {
         String productJson = "{\"id\":1,\"description\":\"Sample Product\",\"amount\":10.0}";
 
-        doNothing().when(cartService).addProductToCart(anyString(), any(Product.class));
+        given(cartService.addProductToCart(anyString(), any(Product.class))).willReturn(true);
 
         mockMvc.perform(post("/cart/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,12 +73,60 @@ class CartControllerTest {
     }
 
     @Test
-    public void deleteCartTest() throws Exception {
-        doNothing().when(cartService).deleteCart("1");
+    public void addProductToCartTest_CartDoesNotExist() throws Exception {
+        String productJson = "{\"id\":1,\"description\":\"Sample Product\",\"amount\":10.0}";
+
+        given(cartService.addProductToCart(anyString(), any(Product.class))).willReturn(false);
+
+        mockMvc.perform(post("/cart/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(productJson))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void addProductToCartTest_NullBody() throws Exception {
+        mockMvc.perform(post("/cart/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void addProductToCartTest_InvalidProduct() throws Exception {
+        String invalidProductJson = "{\"description\":\"No id or amount\"}";
+
+        mockMvc.perform(post("/cart/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidProductJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void addProductToCartTest_NegativeAmount() throws Exception {
+        String productJson = "{\"id\":1,\"description\":\"Bad amount\",\"amount\":-5.0}";
+
+        mockMvc.perform(post("/cart/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(productJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void deleteCartTest_CartExists() throws Exception {
+        given(cartService.deleteCart("1")).willReturn(true);
 
         mockMvc.perform(delete("/cart/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteCartTest_CartDoesNotExist() throws Exception {
+        given(cartService.deleteCart("99")).willReturn(false);
+
+        mockMvc.perform(delete("/cart/99")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
 }

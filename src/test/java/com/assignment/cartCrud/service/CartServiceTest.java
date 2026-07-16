@@ -25,17 +25,77 @@ class CartServiceTest {
     private CartService cartService;
 
     @Test
-    public void testAddProductToCart() {
+    public void testAddProductToCart_CartExists() {
+        String cartId = UUID.randomUUID().toString();
+        Product product = new Product(1L, "Some description", 10D);
+
+        when(cartRepository.addProductToCart(cartId, product)).thenReturn(true);
+
+        boolean result = cartService.addProductToCart(cartId, product);
+
+        assertTrue(result);
+        verify(cartRepository).addProductToCart(cartId, product);
+    }
+
+    @Test
+    public void testAddProductToCart_CartDoesNotExist() {
+        String cartId = UUID.randomUUID().toString();
+        Product product = new Product(1L, "Some description", 10D);
+
+        when(cartRepository.addProductToCart(cartId, product)).thenReturn(false);
+
+        boolean result = cartService.addProductToCart(cartId, product);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void testDeleteCart_CartExists() {
+        String cartId = UUID.randomUUID().toString();
+
+        when(cartRepository.deleteCart(cartId)).thenReturn(true);
+
+        boolean result = cartService.deleteCart(cartId);
+
+        assertTrue(result);
+        verify(cartRepository).deleteCart(cartId);
+    }
+
+    @Test
+    public void testDeleteCart_CartDoesNotExist() {
+        String cartId = UUID.randomUUID().toString();
+
+        when(cartRepository.deleteCart(cartId)).thenReturn(false);
+
+        boolean result = cartService.deleteCart(cartId);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void testGetCart_CartExists() {
         String cartId = UUID.randomUUID().toString();
         Cart mockCart = new Cart();
-        Product product = new Product(1L, "Some description", 10D); // Assuming Product has a no-arg constructor
+        mockCart.setId(cartId);
 
-        when(cartRepository.getCart(cartId)).thenReturn(Optional.of(mockCart));
+        when(cartRepository.getAndTouchCart(cartId)).thenReturn(Optional.of(mockCart));
 
-        cartService.addProductToCart(cartId, product);
+        Optional<Cart> result = cartService.getCart(cartId);
 
-        assertTrue(mockCart.getProducts().contains(product));
-        verify(cartRepository).updateCart(mockCart);
+        assertTrue(result.isPresent());
+        assertEquals(cartId, result.get().getId());
+        verify(cartRepository).getAndTouchCart(cartId);
+    }
+
+    @Test
+    public void testGetCart_CartDoesNotExist() {
+        String cartId = UUID.randomUUID().toString();
+
+        when(cartRepository.getAndTouchCart(cartId)).thenReturn(Optional.empty());
+
+        Optional<Cart> result = cartService.getCart(cartId);
+
+        assertFalse(result.isPresent());
     }
 
 }

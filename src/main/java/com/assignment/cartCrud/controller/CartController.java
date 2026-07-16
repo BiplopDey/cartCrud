@@ -28,18 +28,18 @@ public class CartController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<Void> addProductToCart(@PathVariable String id, @RequestBody Product product) {
-        if(!product.isValid()){
+    public ResponseEntity<Void> addProductToCart(@PathVariable String id, @RequestBody(required = false) Product product) {
+        if (product == null || !product.isValid()) {
             return ResponseEntity.badRequest().build();
         }
 
-        cartService.addProductToCart(id, product);
-        return ResponseEntity.ok().build();
+        boolean added = cartService.addProductToCart(id, product);
+        return added ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCart(@PathVariable String id) {
-        cartService.deleteCart(id);
-        return ResponseEntity.ok().build();
+        boolean deleted = cartService.deleteCart(id);
+        return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 }
