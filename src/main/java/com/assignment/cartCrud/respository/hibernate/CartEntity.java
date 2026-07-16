@@ -1,6 +1,7 @@
 package com.assignment.cartCrud.respository.hibernate;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -17,7 +18,10 @@ public class CartEntity {
     @Id
     private String id;
 
+    @Column(name = "creation_time")
     private LocalDateTime creationTime;
+
+    @Column(name = "last_accessed_time")
     private LocalDateTime lastAccessedTime;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)

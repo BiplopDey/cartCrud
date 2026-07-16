@@ -3,102 +3,88 @@ package com.assignment.cartCrud.respository;
 import com.assignment.cartCrud.model.Cart;
 import com.assignment.cartCrud.model.Product;
 import com.assignment.cartCrud.respository.hibernate.CartEntity;
+import com.assignment.cartCrud.respository.hibernate.CartJpaRepository;
 import com.assignment.cartCrud.respository.hibernate.CartProductEntity;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 @Repository
 @Profile("sqlite")
 public class CartHibernateRepositoryImpl implements CartRepository {
-    private final SessionFactory sessionFactory;
-    private final Object transactionLock = new Object();
+    private final CartJpaRepository repository;
 
-    public CartHibernateRepositoryImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public CartHibernateRepositoryImpl(CartJpaRepository repository) {
+        this.repository = repository;
     }
 
     @Override
+    @Transactional
     public void addCart(Cart cart) {
-        inTransaction(session -> {
-            CartEntity entity = new CartEntity(
-                    cart.getId(), cart.getCreationTime(), cart.getLastAccessedTime());
-            cart.getProducts().forEach(product -> entity.addProduct(new CartProductEntity(product)));
-            session.persist(entity);
-            return null;
-        });
+        CartEntity entity = new CartEntity(
+                cart.getId(), cart.getCreationTime(), cart.getLastAccessedTime());
+        cart.getProducts().forEach(product -> entity.addProduct(new CartProductEntity(product)));
+        repository.save(entity);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Cart> getCart(String id) {
-        return inTransaction(session -> Optional.ofNullable(session.find(CartEntity.class, id))
-                .map(this::toModel));
+        return repository.findById(id).map(this::toModel);
     }
 
     @Override
+    @Transactional
     public Optional<Cart> getAndTouchCart(String id) {
-        return inTransaction(session -> {
-            CartEntity entity = session.find(CartEntity.class, id);
-            if (entity == null) {
-                return Optional.empty();
-            }
-            entity.touch();
-            return Optional.of(toModel(entity));
-        });
+        Optional<CartEntity> entity = repository.findById(id);
+        if (entity.isEmpty()) {
+            return Optional.empty();
+        }
+        entity.get().touch();
+        return entity.map(this::toModel);
     }
 
     @Override
+    @Transactional
     public boolean deleteCart(String id) {
-        return inTransaction(session -> {
-            CartEntity entity = session.find(CartEntity.class, id);
-            if (entity == null) {
-                return false;
-            }
-            session.remove(entity);
-            return true;
-        });
+        Optional<CartEntity> entity = repository.findById(id);
+        if (entity.isEmpty()) {
+            return false;
+        }
+        repository.delete(entity.get());
+        return true;
     }
 
     @Override
+    @Transactional
     public boolean addProductToCart(String cartId, Product product) {
-        return inTransaction(session -> {
-            CartEntity entity = session.find(CartEntity.class, cartId);
-            if (entity == null) {
-                return false;
-            }
-            entity.addProduct(new CartProductEntity(product));
-            entity.touch();
-            return true;
-        });
+        Optional<CartEntity> entity = repository.findById(cartId);
+        if (entity.isEmpty()) {
+            return false;
+        }
+        entity.get().addProduct(new CartProductEntity(product));
+        entity.get().touch();
+        return true;
     }
 
     @Override
+    @Transactional
     public int deleteExpiredCarts(LocalDateTime expirationThreshold) {
-        return inTransaction(session -> {
-            List<CartEntity> expiredCarts = session.createQuery(
-                            "from CartEntity where lastAccessedTime <= :threshold", CartEntity.class)
-                    .setParameter("threshold", expirationThreshold)
-                    .getResultList();
-            expiredCarts.forEach(session::remove);
-            return expiredCarts.size();
-        });
+        return Math.toIntExact(
+                repository.deleteByLastAccessedTimeLessThanEqual(expirationThreshold));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Iterator<Cart> getAllCarts() {
-        return inTransaction(session -> session.createQuery("from CartEntity", CartEntity.class)
-                .getResultList()
+        return repository.findAll()
                 .stream()
                 .map(this::toModel)
-                .iterator());
+                .iterator();
     }
 
     private Cart toModel(CartEntity entity) {
@@ -112,19 +98,4 @@ public class CartHibernateRepositoryImpl implements CartRepository {
         return cart;
     }
 
-    private <T> T inTransaction(Function<Session, T> operation) {
-        synchronized (transactionLock) {
-            try (Session session = sessionFactory.openSession()) {
-                Transaction transaction = session.beginTransaction();
-                try {
-                    T result = operation.apply(session);
-                    transaction.commit();
-                    return result;
-                } catch (RuntimeException exception) {
-                    transaction.rollback();
-                    throw exception;
-                }
-            }
-        }
-    }
 }

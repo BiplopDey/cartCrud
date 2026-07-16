@@ -1,6 +1,7 @@
 package com.assignment.cartCrud.respository.hibernate;
 
 import com.assignment.cartCrud.model.Product;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,8 +14,10 @@ import jakarta.persistence.Table;
 public class CartProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "row_id")
     private Long rowId;
 
+    @Column(name = "product_id")
     private Long productId;
     private String description;
     private Double amount;
