@@ -2,6 +2,7 @@ package com.assignment.cartCrud.respository;
 
 import com.assignment.cartCrud.model.Cart;
 import com.assignment.cartCrud.model.Product;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Repository
+@Profile("!sqlite")
 public class CartInMemoryRepositoryImpl implements CartRepository{
     private final Map<String, Cart> carts = new ConcurrentHashMap<>();
 

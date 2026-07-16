@@ -1,0 +1,3 @@
+cart:
+  sqlite:
+    url: jdbc:sqlite:cartcrud.db
